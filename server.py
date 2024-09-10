@@ -8,21 +8,23 @@ import threading
 threads = list()
 
 def handle_connection(conn):
-    from_client = ''
-    try:
-        while True:
-            data = conn.recv(4096)                
-            if not data:
-                break
-            from_client += data.decode('utf8')[4:]
-            
-            print(f"From client: {from_client}")
+    lock = threading.Lock()
+    with lock:
+        from_client = ''
+        try:
+            while True:
+                data = conn.recv(4096)                
+                if not data:
+                    break
+                from_client += data.decode('utf8')[4:]
                 
-    except KeyboardInterrupt:
-        print("Stopped by Ctrl+C")
-    finally:
-        if conn:
-            conn.close()
+                print(f"From client: {from_client}")
+                    
+        except KeyboardInterrupt:
+            print("Stopped by Ctrl+C")
+        finally:
+            if conn:
+                conn.close()
     
 
 def run_server(ip,port):
@@ -31,13 +33,10 @@ def run_server(ip,port):
     serv.bind((ip, port))
     serv.listen()
     #Creates Threads List
-    lock = threading.Lock()
     while True:
         conn, addr = serv.accept()
-        with lock:
-            x = threading.Thread(target=handle_connection, args=[conn])
-            x.start()
-            x.join()
+        x = threading.Thread(target=handle_connection, args=[conn])
+        x.start()
 
 def get_args():
     parser = argparse.ArgumentParser(description='Send data to server.')
