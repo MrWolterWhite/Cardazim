@@ -15,10 +15,8 @@ def handle_connection(conn):
             if not data:
                 break
             from_client += data.decode('utf8')[4:]
-        
-            x = threading.Thread(target=print, args=[f'From client: {from_client}'])
-            #x = threading.Thread(target=os.system, args=[f'say {from_client}'])
-            x.run()
+            
+            print(f"From client: {from_client}")
                 
     except KeyboardInterrupt:
         print("Stopped by Ctrl+C")
@@ -35,12 +33,12 @@ def run_server(ip,port):
     serv.bind((ip, port))
     serv.listen()
     #Creates Threads List
-    
     lock = threading.Lock()
     while True:
         conn, addr = serv.accept()
         with lock:
-            handle_connection(conn)
+            x = threading.Thread(target=handle_connection, args=[conn])
+            x.join()
 
 def get_args():
     parser = argparse.ArgumentParser(description='Send data to server.')
