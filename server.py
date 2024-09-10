@@ -23,8 +23,6 @@ def handle_connection(conn):
     finally:
         if conn:
             conn.close()
-        for t in threads:
-            t.join()
     
 
 def run_server(ip,port):
@@ -38,6 +36,7 @@ def run_server(ip,port):
         conn, addr = serv.accept()
         with lock:
             x = threading.Thread(target=handle_connection, args=[conn])
+            x.start()
             x.join()
 
 def get_args():
