@@ -15,7 +15,7 @@ def send_data(server_ip, server_port, data):
     
     client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     client.connect((server_ip, int(server_port)))
-    client.send(data.encode())
+    client.send(len(data).to_bytes(4)+data.encode())
     client.close()
 
 
