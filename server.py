@@ -34,7 +34,6 @@ def run_server(ip,port):
     serv = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     serv.bind((ip, port))
     serv.listen()
-    print(serv.__repr__)
     #Creates Threads List
     
     lock = threading.Lock()
