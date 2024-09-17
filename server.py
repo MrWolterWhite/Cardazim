@@ -3,40 +3,45 @@ import sys
 import socket
 import os
 import threading
+import listener
+import connection
 
 
 threads = list()
 
 def handle_connection(conn):
+    serv = conn.connection
     lock = threading.Lock()
-    with lock:
-        from_client = ''
-        try:
-            while True:
-                data = conn.recv(4096)                
-                if not data:
-                    break
-                from_client += data.decode('utf8')[4:]
-                
-                print(f"From client: {from_client}")
+
+    from_client = ''
+    try:
+        with lock:
+            msg_size = int.from_bytes(serv.recv(4))
+            if msg_size:
+                msg_size = int(msg_size)
+                data = serv.recv(msg_size).decode('utf-8')       
+                if data:
+                    from_client += data
+                    #print(f"Connection from {serv.getsockname()[0]}:{serv.getsockname()[1]} to {conn.__repr__()[(conn.__repr__().index(')')+11):-2].replace("\', ",":")}")
+                    print(f"From client: {from_client}")
                     
-        except KeyboardInterrupt:
-            print("Stopped by Ctrl+C")
-        finally:
-            if conn:
-                conn.close()
+    except KeyboardInterrupt:
+        print("Stopped by Ctrl+C")
+    finally:
+        if serv:
+            conn.close()
     
 
 def run_server(ip,port):
-    #Creates Server
-    serv = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    serv.bind((ip, port))
-    serv.listen()
-    #Creates Threads List
+    serv = listener.Listener(ip,port)
+    serv.start()
+
     while True:
-        conn, addr = serv.accept()
+        #When we get a message
+        conn = serv.accept()
         x = threading.Thread(target=handle_connection, args=[conn])
         x.start()
+
 
 def get_args():
     parser = argparse.ArgumentParser(description='Send data to server.')

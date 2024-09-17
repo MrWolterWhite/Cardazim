@@ -1,6 +1,9 @@
 import argparse
 import sys
 import socket
+import connection
+import listener
+
 
 
 ###########################################################
@@ -12,10 +15,14 @@ def send_data(server_ip, server_port, data):
     '''
     Send data to server in address (server_ip, server_port).
     '''
+
+    server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    server.connect((server_ip, int(server_port)))
+
+    client = connection.Connection(server)
+
+    client.send_message(data.encode())
     
-    client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    client.connect((server_ip, int(server_port)))
-    client.send(len(data).to_bytes(4)+data.encode())
     client.close()
 
 
