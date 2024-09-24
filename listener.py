@@ -22,7 +22,7 @@ class Listener:
         self.socket.close()
 
     def accept(self):
-        conn, addr = self.socket.accept()
+        conn, _ = self.socket.accept()
         return connection.Connection(conn)
 
     def __enter__(self):

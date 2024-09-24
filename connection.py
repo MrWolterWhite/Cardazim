@@ -3,27 +3,33 @@ import sys
 import socket
 import os
 import threading
+from crypt_image import CryptImage
+from card import Card
 
-def handle_connection(socket):
+def handle_connection(conn):
     lock = threading.Lock()
 
     from_client = ''
     try:
         with lock:
-            msg_size = socket.recv(4).decode('utf-8')
-            if msg_size:
-                msg_size = int(msg_size)
-                data = socket.recv(msg_size).decode('utf-8')       
-                if data:
-                    from_client += data
-                    #print(f"Connection from {serv.getsockname()[0]}:{serv.getsockname()[1]} to {conn.__repr__()[(conn.__repr__().index(')')+11):-2].replace("\', ",":")}")
-                    print(f"From client: {from_client}")
+            msg_size_bytes = conn.recv(4)
+            msg_size = int.from_bytes(msg_size_bytes)
+            msg_size = int(msg_size)
+            size = msg_size
+            data = b''
+            while size > 0:
+                retreived_data = conn.recv(msg_size)
+                data += retreived_data
+                size -= len(retreived_data)
+            card = Card.deserialize(data)
+            print(str(card))
+
                     
     except KeyboardInterrupt:
         print("Stopped by Ctrl+C")
     finally:
-        if socket:
-            socket.close()
+        if conn:
+            conn.close()
 
 
 class Connection:
@@ -33,11 +39,11 @@ class Connection:
     def __repr__(self):
         return f"Connection from {self.connection.getsockname()[0]}:{self.connection.getsockname()[1]} to {self.connection.__repr__()[(self.connection.__repr__().index(')')+11):-2].replace("\', ",":")}"
     def send_message(self, messege: bytes):
-        str_messege = messege.decode()
-        self.connection.send(len(str_messege).to_bytes(4)+messege)
+        self.connection.send(len(messege).to_bytes(4)+messege)
     def receive_message(self):
         x = threading.Thread(target=handle_connection, args=[self.connection])
         x.start()
+        
         
     @classmethod
     def connect(cls, host, port):
@@ -56,7 +62,3 @@ class Connection:
     def __exit__(self, exc_type, exc_value, exc_traceback):
         self.close()
 
-if __name__ == "__main__":
-    with Connection.connect("127.0.0.1", 8080) as connection:
-        connection.send_message(b'hello')
-        data = connection.receive_message()

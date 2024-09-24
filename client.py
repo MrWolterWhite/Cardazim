@@ -3,6 +3,8 @@ import sys
 import socket
 import connection
 import listener
+from crypt_image import CryptImage
+from card import Card
 
 
 
@@ -21,7 +23,7 @@ def send_data(server_ip, server_port, data):
 
     client = connection.Connection(server)
 
-    client.send_message(data.encode())
+    client.send_message(data)
     
     client.close()
 
@@ -37,8 +39,16 @@ def get_args():
                         help='the server\'s ip')
     parser.add_argument('server_port', type=int,
                         help='the server\'s port')
-    parser.add_argument('data', type=str,
-                        help='the data')
+    parser.add_argument('name', type=str,
+                        help='the name of the card')
+    parser.add_argument('creator', type=str,
+                        help='the name of the creator')
+    parser.add_argument('riddle', type=str,
+                        help='the riddle')
+    parser.add_argument('solution', type=str,
+                        help='the solution to the riddle')
+    parser.add_argument('path', type=str,
+                        help='the path of the image')
     return parser.parse_args()
 
 
@@ -48,7 +58,9 @@ def main():
     '''
     args = get_args()
     try:
-        send_data(args.server_ip, args.server_port, args.data)
+        card = Card.create_from_path(args.name, args.creator, args.path, args.riddle, args.solution)
+        card.image.encrypt(args.solution)
+        send_data(args.server_ip, args.server_port, card.serialize())
         print('Done.')
     except Exception as error:
         print(f'ERROR: {error}')
