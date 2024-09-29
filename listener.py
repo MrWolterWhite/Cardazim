@@ -26,8 +26,9 @@ class Listener:
         return connection.Connection(conn)
 
     def __enter__(self):
+        self.start()
         return self
     
     def __exit__(self):
-        self.socket.close()
+        self.stop()
 

@@ -51,3 +51,6 @@ class Card:
         #print(image_height*image_width*3)
         #print(len(binary_image_data))
         return Card(name, creator, CryptImage(Image.frombytes(mode="RGB", size=(image_height, image_width), data=binary_image_data), key_hash), riddle, None)
+    
+    def generate_identifier(self) -> str:
+        return f"{self.creator}/{self.name}"

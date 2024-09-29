@@ -5,24 +5,25 @@ import os
 import threading
 from crypt_image import CryptImage
 from card import Card
+from card_manager import CardManager
 
-def handle_connection(conn):
+def handle_connection(conn, dir):
     lock = threading.Lock()
-
-    from_client = ''
+    manager = CardManager()
     try:
+        msg_size_bytes = conn.recv(4)
+        msg_size = int.from_bytes(msg_size_bytes)
+        size = msg_size
+        data = b''
+        while size > 0:
+            retreived_data = conn.recv(msg_size)
+            data += retreived_data
+            size -= len(retreived_data)
+        card = Card.deserialize(data)
         with lock:
-            msg_size_bytes = conn.recv(4)
-            msg_size = int.from_bytes(msg_size_bytes)
-            msg_size = int(msg_size)
-            size = msg_size
-            data = b''
-            while size > 0:
-                retreived_data = conn.recv(msg_size)
-                data += retreived_data
-                size -= len(retreived_data)
-            card = Card.deserialize(data)
-            print(str(card))
+            print("Received Card")
+            manager.save(card, dir)
+            print(f"Saved card to path {dir}")
 
                     
     except KeyboardInterrupt:
@@ -40,8 +41,8 @@ class Connection:
         return f"Connection from {self.connection.getsockname()[0]}:{self.connection.getsockname()[1]} to {self.connection.__repr__()[(self.connection.__repr__().index(')')+11):-2].replace("\', ",":")}"
     def send_message(self, messege: bytes):
         self.connection.send(len(messege).to_bytes(4)+messege)
-    def receive_message(self):
-        x = threading.Thread(target=handle_connection, args=[self.connection])
+    def receive_message(self, dir):
+        x = threading.Thread(target=handle_connection, args=[self.connection, dir])
         x.start()
         
         
