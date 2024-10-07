@@ -9,7 +9,7 @@ from card_manager import CardManager
 
 def handle_connection(conn, dir):
     lock = threading.Lock()
-    manager = CardManager()
+    manager = CardManager(dir, os.path.join(dir.split("//")[1],"images"))
     try:
         msg_size_bytes = conn.recv(4)
         msg_size = int.from_bytes(msg_size_bytes)
@@ -22,7 +22,7 @@ def handle_connection(conn, dir):
         card = Card.deserialize(data)
         with lock:
             print("Received Card")
-            manager.save(card, dir)
+            manager.save(card, manager.driver.dir)
             print(f"Saved card to path {dir}")
 
                     

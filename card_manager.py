@@ -1,21 +1,40 @@
 from card import Card
 import os
 import json
+from file_system_driver import FileSystemDriver
+from sql_driver import SqlDriver
 from PIL import Image
 
 class CardManager:
+
+    def __init__(self, database_url: str, images_url: str):
+        self.driver = self.get_driver(database_url, images_url)
+        self.images_url = images_url
+
+    def get_driver(self, database_url: str, images_url: str):
+        #important!!!! check that the OS gets the url with "filesystem" suffix
+        driver_option = database_url.split(":")[0]
+        if driver_option == "filesystem":
+            return FileSystemDriver(database_url.split(":")[1][2:], images_url)
+        elif driver_option == "sql":
+            return SqlDriver(database_url.split(":")[1][2:], images_url)
+        else:
+            return None
+
+
     def save(self, card: Card, dir_path: str):
-        print(self.get_identifier(card))
-        self_path = os.path.join(dir_path, self.get_identifier(card))
-        os.makedirs(self_path)
-        image_path = os.path.join(self_path, "image.png")
-        json_data = json.dumps([card.name, card.creator, card.riddle, card.solution, image_path])
-        json_path = os.path.join(self_path, "metadata.json")
-        with open(json_path,"w") as json_file:
-            json_file.write(json_data)
-        card.image.image.save(image_path,"png")
+        self.driver.dir = dir_path
+        self.driver.save(card, card.generate_identifier())
+
     def get_identifier(self, card: Card) -> str:
         return card.generate_identifier()
+    
     def load(self, identifier: str) -> Card:
-        pass
+        return self.driver.load(identifier)
+    
+    def get_creators(self) -> [str]:
+        return self.driver.getCreators()
+    
+    def get_creator_cards(self, creator: str) -> [Card]:
+        return self.driver.getCreatorCards(creator)
     
