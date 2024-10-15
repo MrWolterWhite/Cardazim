@@ -53,4 +53,7 @@ class Card:
         return Card(name, creator, CryptImage(Image.frombytes(mode="RGB", size=(image_height, image_width), data=binary_image_data), key_hash), riddle, None)
     
     def generate_identifier(self) -> str:
-        return f"{self.creator}/{self.name}"
+        return f"{self.creator}-{self.name}"
+    
+    def generate_creator_name_from_identifier(identifier) -> tuple[str,str]:
+        return (identifier.split("-")[0],identifier.split("-")[1])
