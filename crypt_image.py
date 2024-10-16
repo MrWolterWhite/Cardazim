@@ -39,6 +39,6 @@ class CryptImage():
 
 if __name__ == "__main__":
     img = CryptImage.create_from_path("cat.jpg")
-    img.encrypt("Arazim is the best")
-    img.decrypt("Talpiot is the best")
-    img.decrypt("Arazim is the best")
+    # img.encrypt("Arazim is the best")
+    # img.decrypt("Talpiot is the best")
+    # img.decrypt("Arazim is the best")

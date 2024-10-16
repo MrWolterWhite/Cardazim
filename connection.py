@@ -38,7 +38,8 @@ class Connection:
         self.connection = connection
 
     def __repr__(self):
-        return f"Connection from {self.connection.getsockname()[0]}:{self.connection.getsockname()[1]} to {self.connection.__repr__()[(self.connection.__repr__().index(')')+11):-2].replace("\', ",":")}"
+        return "Connection"
+        #return f"Connection from {self.connection.getsockname()[0]}:{self.connection.getsockname()[1]} to {self.connection.__repr__()[(self.connection.__repr__().index(')')+11):-2].replace("\'","").replace(", ",":")}"
     def send_message(self, messege: bytes):
         self.connection.send(len(messege).to_bytes(4)+messege)
     def receive_message(self, dir):
